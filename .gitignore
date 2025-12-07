@@ -137,3 +137,19 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# --- Recommended Additions ---
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# VS Code directories (optional, uncomment if you don't want to share settings)
+.vscode/
+
+# Deprecated config files
+.eslintignore
+
+/generated/prisma
+
+.husky/
