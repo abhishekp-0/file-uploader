@@ -9,6 +9,7 @@ import bcrypt from 'bcrypt';
 import { PrismaSessionStore } from '@quixo3/prisma-session-store';
 import { prisma } from './prisma.js';
 import authRouter, { isAuthenticated } from './routes/authRouter.js';
+import fileRouter from './routes/fileRouter.js';
 
 const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
@@ -88,13 +89,15 @@ passport.deserializeUser(async (id, done) => {
 
 // Routes
 app.use('/', authRouter);
+app.use('/', isAuthenticated, fileRouter);
 
 app.get('/', (req, res) => {
   res.render('index', { user: req.user });
 });
 
 app.get('/dashboard', isAuthenticated, (req, res) => {
-  res.render('dashboard', { user: req.user });
+  const uploadSuccess = req.query.upload === 'success';
+  res.render('dashboard', { user: req.user, uploadSuccess });
 });
 
 app.use((req, res) => {
@@ -104,6 +107,15 @@ app.use((req, res) => {
 app.use((err, req, res, _next) => {
   const statusCode = err.statusCode || 500;
   console.error(`${statusCode} ERROR :`, err);
+
+  // Handle multer errors
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).send('File too large. Maximum size is 10MB.');
+    }
+    return res.status(400).send(`Upload error: ${err.message}`);
+  }
+
   res.status(statusCode).send(`${statusCode} ERROR : ${err.message}`);
 });
 
