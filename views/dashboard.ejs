@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+  </head>
+  <body>
+    <h1>Dashboard</h1>
+    <p>Welcome, <%= user.username %>!</p>
+    <p>This is a protected page. Only authenticated users can see this.</p>
+
+    <nav>
+      <a href="/">Home</a>
+      <form method="POST" action="/logout" style="display: inline">
+        <button type="submit">Logout</button>
+      </form>
+    </nav>
+  </body>
+</html>

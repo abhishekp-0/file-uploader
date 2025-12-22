@@ -27,8 +27,8 @@
   "homepage": "https://github.com/abhishekp-0/file-uploader#readme",
   "description": "",
   "dependencies": {
-    "@prisma/adapter-pg": "^7.1.0",
-    "@prisma/client": "^7.1.0",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
     "@quixo3/prisma-session-store": "^3.1.13",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
@@ -46,7 +46,6 @@
     "@eslint/json": "^0.14.0",
     "@eslint/markdown": "^7.5.1",
     "@types/express": "^5.0.6",
-    "@types/node": "^24.10.1",
     "@types/pg": "^8.15.6",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
@@ -56,8 +55,6 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "3.7.4",
-    "prisma": "^7.1.0",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "prisma": "^7.2.0"
   }
 }

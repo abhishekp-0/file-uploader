@@ -2,9 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Uploader</title>
 </head>
 <body>
-  <h1>hello world!</h1>
+  <h1>Welcome to File Uploader</h1>
+  
+  <% if (user) { %>
+    <p>Hello, <%= user.username %>!</p>
+    <a href="/dashboard">Go to Dashboard</a>
+    <form method="POST" action="/logout" style="display: inline;">
+      <button type="submit">Logout</button>
+    </form>
+  <% } else { %>
+    <p>Please <a href="/login">login</a> or <a href="/signup">sign up</a> to continue.</p>
+  <% } %>
 </body>
 </html>

@@ -153,3 +153,5 @@ Thumbs.db
 /generated/prisma
 
 .husky/
+
+/generated/prisma
