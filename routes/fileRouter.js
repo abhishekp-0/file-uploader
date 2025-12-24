@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs/promises';
-import { prisma } from '../prisma.js';
+import { prisma } from '../config/prisma.js';
 import { isAuthenticated } from './authRouter.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
