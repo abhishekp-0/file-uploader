@@ -1,6 +1,6 @@
 import { prisma } from '../config/prisma.js';
 
-export async function fetchRoot(req, res) {
+export async function renderDashboard(req, res) {
   const entities = await prisma.entity.findMany({
     where: {
       userId: req.user.id,
@@ -8,6 +8,9 @@ export async function fetchRoot(req, res) {
     },
     orderBy: { createdAt: 'asc' },
   });
-
-  res.json(entities);
+  res.render('dashboard/dashboard', {
+    entities: entities,
+    user: req.user,
+    currentFolderId: null,
+  });
 }
