@@ -1,18 +1,51 @@
 import { prisma } from '../config/prisma.js';
 
+async function buildBreadcrumb(entity) {
+  const trail = [entity];
+  let current = entity;
+  console.log('Starting entity:', current);
+
+  while (current?.parentId) {
+    {
+      current = await prisma.entity.findUnique({
+        where: { id: current.parentId },
+      });
+    }
+    trail.unshift(current);
+  }
+  return trail;
+}
+
 async function renderFolder(req, res) {
-  const entities = await prisma.entity.findMany({
+  const entity = await prisma.entity.findFirst({
+    where: {
+      id: parseInt(req.params.id),
+      userId: req.user.id,
+    },
+  });
+
+  const children = await prisma.entity.findMany({
     where: {
       userId: req.user.id,
       parentId: parseInt(req.params.id),
     },
     orderBy: { createdAt: 'asc' },
   });
-  res.render('dashboard/dashboard', {
-    entities: entities,
-    user: req.user,
-    currentFolderId: parseInt(req.params.id),
-  });
+
+  if (!entity) res.status(404);
+
+  const breadcrumbs = await buildBreadcrumb(entity);
+  if (entity.type === 'FOLDER') {
+    // folder view
+    res.render('dashboard/dashboard', {
+      entities: children,
+      user: req.user,
+      currentFolderId: parseInt(req.params.id),
+      breadcrumbs: breadcrumbs,
+    });
+  } else {
+    // file detail view (Phase 2 basic)
+  }
 }
 
 async function createFolder(req, res) {

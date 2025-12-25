@@ -12,5 +12,6 @@ export async function renderDashboard(req, res) {
     entities: entities,
     user: req.user,
     currentFolderId: null,
+    breadcrumbs: [],
   });
 }

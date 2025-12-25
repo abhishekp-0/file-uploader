@@ -9,8 +9,20 @@
     <header>
       <h1>Dashboard</h1>
       <p>Welcome, <strong><%= user.username %></strong>!</p>
+      <form method="post" action="/logout">
+        <button>logout</button>
+      </form>
     </header>
-    
+    <nav aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/dashboard">root</a></li>
+        <% for( let i = 0; i < breadcrumbs.length; i++ ) { %>
+          <li><a href="/entities/<%- breadcrumbs[i].id%>"><%= breadcrumbs[i].name %></a></li>
+        <% } %>
+      </ol>
+    </nav>
+    <br>
+    <h2><%= breadcrumbs[breadcrumbs.length-1].name %></h2>
     <div>
       <ul>
         <% for( let i = 0; i  < entities.length; i ++ )  { %>
