@@ -19,7 +19,7 @@ async function buildBreadcrumb(entity) {
 async function renderFolder(req, res) {
   const entity = await prisma.entity.findFirst({
     where: {
-      id: parseInt(req.params.id),
+      id: parseInt(req.params.id, 10),
       userId: req.user.id,
     },
   });
@@ -27,7 +27,7 @@ async function renderFolder(req, res) {
   const children = await prisma.entity.findMany({
     where: {
       userId: req.user.id,
-      parentId: parseInt(req.params.id),
+      parentId: parseInt(req.params.id, 10),
     },
     orderBy: { createdAt: 'asc' },
   });
@@ -40,7 +40,7 @@ async function renderFolder(req, res) {
     res.render('dashboard/dashboard', {
       entities: children,
       user: req.user,
-      currentFolderId: parseInt(req.params.id),
+      currentFolderId: parseInt(req.params.id, 10),
       breadcrumbs: breadcrumbs,
     });
   } else {
@@ -49,7 +49,7 @@ async function renderFolder(req, res) {
 }
 
 async function createFolder(req, res) {
-  const parentId = req.body.parent ? parseInt(req.body.parent) : null;
+  const parentId = req.body.parent ? parseInt(req.body.parent, 10) : null;
 
   await prisma.entity.create({
     data: {
