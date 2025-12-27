@@ -49,7 +49,7 @@ async function renderFolder(req, res) {
 }
 
 async function createFolder(req, res) {
-  const parentId = req.query.parent ? parseInt(req.query.parent) : null;
+  const parentId = req.body.parent ? parseInt(req.body.parent) : null;
 
   await prisma.entity.create({
     data: {
