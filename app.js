@@ -8,6 +8,7 @@ import './config/passport.js';
 import { authRouter } from './routes/authRouter.js';
 import { dashboardRouter } from './routes/dashboardRouter.js';
 import { entityRouter } from './routes/entityRouter.js';
+import uploadRouter from './routes/uploadRouter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +32,7 @@ app.get('/', (req, res) => res.redirect('/dashboard'));
 app.use('/', authRouter);
 app.use('/dashboard', dashboardRouter);
 app.use('/entities', entityRouter);
+app.use('/', uploadRouter);
 
 // // Routes
 // app.use('/', authRouter);

@@ -3,7 +3,6 @@ import { prisma } from '../config/prisma.js';
 async function buildBreadcrumb(entity) {
   const trail = [entity];
   let current = entity;
-  console.log('Starting entity:', current);
 
   while (current?.parentId) {
     {
@@ -50,15 +49,22 @@ async function renderFolder(req, res) {
 
 async function createFolder(req, res) {
   const parentId = req.query.parent ? parseInt(req.query.parent) : null;
+  const parent = parentId
+    ? await prisma.entity.findFirst({
+        where: { id: parentId, userId: req.user.id, type: 'FOLDER' },
+      })
+    : null;
 
-  await prisma.entity.create({
-    data: {
-      name: req.body.name,
-      type: 'FOLDER',
-      userId: req.user.id,
-      parentId: parentId,
-    },
-  });
+  if (parent) {
+    await prisma.entity.create({
+      data: {
+        name: req.body.name,
+        type: 'FOLDER',
+        userId: req.user.id,
+        parentId: parentId,
+      },
+    });
+  }
 
   const redirectUrl = parentId ? `/entities/${parentId}` : '/dashboard';
   res.redirect(redirectUrl);

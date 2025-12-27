@@ -22,7 +22,11 @@
       </ol>
     </nav>
     <br>
-    <h2><%= breadcrumbs[breadcrumbs.length-1].name %></h2>
+    <% if (breadcrumbs.length>0) { %>
+      <h2><%= breadcrumbs[breadcrumbs.length-1].name %></h2>
+    <% } else { %>
+     <h2>Root</h2>
+    <% } %>
     <div>
       <ul>
         <% for( let i = 0; i  < entities.length; i ++ )  { %>
@@ -41,6 +45,16 @@
       </div>
       
       <button type="submit">Add Folder</button>
+    </form>
+  </body>
+
+  <h2>Upload a File</h2>
+    <form method="POST" action="/upload/file?parentId=<%= currentFolderId || '' %>" enctype="multipart/form-data">
+      <div>
+        <input type="file" name="file" required />
+      </div>
+      
+      <button type="submit">Upload File</button>
     </form>
   </body>
 </html>
