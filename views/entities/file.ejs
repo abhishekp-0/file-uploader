@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+  </head>
+  <body>
+    <header>
+      <h1>Dashboard</h1>
+      <p>Welcome, <strong><%= user.username %></strong>!</p>
+      <form method="post" action="/logout">
+        <button>logout</button>
+      </form>
+    </header>
+    <nav aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/dashboard">root</a></li>
+        <% for( let i = 0; i < breadcrumbs.length; i++ ) { %>
+          <li><a href="/entities/<%- breadcrumbs[i].id%>"><%= breadcrumbs[i].name %></a></li>
+        <% } %>
+      </ol>
+    </nav>
+    <br>
+    <% if (breadcrumbs.length>0) { %>
+      <h2><%= breadcrumbs[breadcrumbs.length-1].name %></h2>
+    <% } else { %>
+     <h2>Root</h2>
+    <% } %>
+    <div>
+      <ul>
+        <li>Name: <%= file.name %></li>
+        <li>Size: <%=file.size%> bytes</li>
+        <li>Type: <%=file.mimeType%></li>
+        <li>Created at: <%=file.createdAt%></li>
+        <li><button>Download</button></li>
+      </ul>
+    </div>
+  </br>
+  
+
+  
+  </body>
+</html>

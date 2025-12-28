@@ -15,7 +15,7 @@ async function buildBreadcrumb(entity) {
   return trail;
 }
 
-async function renderFolder(req, res) {
+async function renderEntityView(req, res) {
   const entity = await prisma.entity.findFirst({
     where: {
       id: parseInt(req.params.id),
@@ -43,6 +43,12 @@ async function renderFolder(req, res) {
       breadcrumbs: breadcrumbs,
     });
   } else {
+    res.render('entities/file', {
+      file: entity,
+      user: req.user,
+      currentFolderId: parseInt(req.params.id),
+      breadcrumbs: breadcrumbs,
+    });
     // file detail view (Phase 2 basic)
   }
 }
@@ -70,4 +76,4 @@ async function createFolder(req, res) {
   res.redirect(redirectUrl);
 }
 
-export { renderFolder, createFolder };
+export { renderEntityView, createFolder };
