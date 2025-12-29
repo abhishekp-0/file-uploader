@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma.js';
+import { getLocalFilePath } from '../services/fileService.js';
 
 async function buildBreadcrumb(entity) {
   const trail = [entity];
@@ -53,6 +54,23 @@ async function renderEntityView(req, res) {
   }
 }
 
+async function downloadEntity(req, res) {
+  const entity = await prisma.entity.findFirst({
+    where: {
+      id: parseInt(req.params.id),
+      userId: req.user.id,
+      type: 'FILE',
+    },
+  });
+
+  const filePath = getLocalFilePath(entity);
+  res.download(filePath, entity.name, (err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('File download failed');
+    }
+  });
+}
 async function createFolder(req, res) {
   const parentId = req.query.parent ? parseInt(req.query.parent) : null;
   const parent = parentId
@@ -76,4 +94,4 @@ async function createFolder(req, res) {
   res.redirect(redirectUrl);
 }
 
-export { renderEntityView, createFolder };
+export { renderEntityView, createFolder, downloadEntity };

@@ -33,7 +33,7 @@
         <li>Size: <%=file.size%> bytes</li>
         <li>Type: <%=file.mimeType%></li>
         <li>Created at: <%=file.createdAt%></li>
-        <li><button>Download</button></li>
+        <li><a href="/entities/<%= file.id %>/download"><button>Download</button></a></li>
       </ul>
     </div>
   </br>

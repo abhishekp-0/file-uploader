@@ -16,7 +16,8 @@ export async function uploadFile(req, res, _next) {
         type: 'FILE',
         size: file.size,
         mimeType: file.mimetype,
-        parentId: parent ? parseInt(parentId) : null, // Added parseInt()
+        storageKey: file.filename,
+        parentId: parent ? parseInt(parentId) : null,
         userId: req.user.id,
       },
     });

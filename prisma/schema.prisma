@@ -37,6 +37,7 @@ model Entity {
   createdAt       DateTime    @default(now())
   parentId        Int?        // Optional field for parent folder
   userId          Int
+  storageKey String?
   user            User        @relation(fields: [userId], references: [id])
 
   parentFolder    Entity?         @relation("EntityParent", fields: [parentId], references: [id], onDelete: Cascade)
