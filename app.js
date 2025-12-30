@@ -2,6 +2,7 @@ import 'dotenv/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
+import methodOverride from 'method-override';
 import { sessionMiddleware } from './config/session.js';
 import passport from 'passport';
 import './config/passport.js';
@@ -15,46 +16,42 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// 1. Body parsers (REQUIRED before method-override)
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+// 2. method-override
+app.use(methodOverride('_method'));
+
+// 3. View engine & static
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
+// 4. Session
 app.use(sessionMiddleware);
 
-// Passport initialization
+// 5. Passport (depends on req.method)
 app.use(passport.initialize());
 app.use(passport.session());
 
+// 6. Routes
 app.get('/', (req, res) => res.redirect('/dashboard'));
 app.use('/', authRouter);
 app.use('/dashboard', dashboardRouter);
 app.use('/entities', entityRouter);
 app.use('/', uploadRouter);
 
-// // Routes
-// app.use('/', authRouter);
-// app.use('/', isAuthenticated, fileRouter);
+// Error handling middleware
+app.use((err, req, res, _next) => {
+  const status = err.status || 500;
+  const message = err.message || 'Internal Server Error';
 
-// app.get('/', (req, res) => {
-//   res.render('index', { user: req.user });
-// });
-
-// app.get('/dashboard', isAuthenticated, (req, res) => {
-//   const uploadSuccess = req.query.upload === 'success';
-//   res.render('dashboard', { user: req.user, uploadSuccess });
-// });
-
-// app.use((req, res) => {
-//   res.status(404).send('404 ERROR : Page not found');
-// });
-
-// app.use((err, req, res, _next) => {
-//   const statusCode = err.statusCode || 500;
-//   console.error(`${statusCode} ERROR :`, err);
-//   res.status(statusCode).send(`${statusCode} ERROR : ${err.message}`);
-// });
+  res.status(status).render('error', {
+    message: message,
+    status: status,
+    user: req.user || null,
+  });
+});
 
 export default app;

@@ -1,15 +1,20 @@
 import { prisma } from '../config/prisma.js';
 import fs from 'fs/promises';
+import { validateParentId } from '../services/entityService.js';
 
-export async function uploadFile(req, res, _next) {
+export async function uploadFile(req, res, next) {
   const file = req.file;
-  const parentId = req.query.parentId || null; // Changed from parentId to parent
-  let parent = null;
+  const parentId = req.query.parentId || null;
 
   try {
-    await validateParentId();
+    if (!file) {
+      const error = new Error('No file provided');
+      error.status = 400;
+      throw error;
+    }
 
-    //upload logic
+    const parent = await validateParentId(parentId, req.user.id);
+
     await prisma.entity.create({
       data: {
         name: file.originalname,
@@ -28,7 +33,9 @@ export async function uploadFile(req, res, _next) {
 
     return res.redirect('/dashboard');
   } catch (error) {
-    // Delete uploaded file from disk
+    console.error('Upload error:', error);
+
+    // Delete uploaded file from disk if it exists
     if (file && file.path) {
       try {
         await fs.unlink(file.path);
@@ -38,27 +45,11 @@ export async function uploadFile(req, res, _next) {
       }
     }
 
-    // Surface error cleanly
-    console.error('Upload error:', error);
-    return res.status(400).render('error', {
-      message: error.message || 'Failed to upload file',
-      user: req.user,
-    });
-  }
-
-  async function validateParentId() {
-    if (parentId) {
-      parent = await prisma.entity.findFirst({
-        where: {
-          id: parseInt(parentId),
-          userId: req.user.id,
-          type: 'FOLDER',
-        },
-      });
-
-      if (!parent) {
-        throw new Error('Invalid parent folder');
-      }
+    // Set status if not already set
+    if (!error.status) {
+      error.status = 400;
     }
+
+    next(error);
   }
 }

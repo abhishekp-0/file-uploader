@@ -1,97 +1,161 @@
 import { prisma } from '../config/prisma.js';
 import { getLocalFilePath } from '../services/fileService.js';
+import {
+  buildBreadcrumbs,
+  renameEntity as renameEntityService,
+} from '../services/entityService.js';
 
-async function buildBreadcrumb(entity) {
-  const trail = [entity];
-  let current = entity;
-
-  while (current?.parentId) {
-    {
-      current = await prisma.entity.findUnique({
-        where: { id: current.parentId },
-      });
-    }
-    trail.unshift(current);
-  }
-  return trail;
-}
-
-async function renderEntityView(req, res) {
-  const entity = await prisma.entity.findFirst({
-    where: {
-      id: parseInt(req.params.id),
-      userId: req.user.id,
-    },
-  });
-
-  const children = await prisma.entity.findMany({
-    where: {
-      userId: req.user.id,
-      parentId: parseInt(req.params.id),
-    },
-    orderBy: { createdAt: 'asc' },
-  });
-
-  if (!entity) res.status(404);
-
-  const breadcrumbs = await buildBreadcrumb(entity);
-  if (entity.type === 'FOLDER') {
-    // folder view
-    res.render('dashboard/dashboard', {
-      entities: children,
-      user: req.user,
-      currentFolderId: parseInt(req.params.id),
-      breadcrumbs: breadcrumbs,
-    });
-  } else {
-    res.render('entities/file', {
-      file: entity,
-      user: req.user,
-      currentFolderId: parseInt(req.params.id),
-      breadcrumbs: breadcrumbs,
-    });
-    // file detail view (Phase 2 basic)
-  }
-}
-
-async function downloadEntity(req, res) {
-  const entity = await prisma.entity.findFirst({
-    where: {
-      id: parseInt(req.params.id),
-      userId: req.user.id,
-      type: 'FILE',
-    },
-  });
-
-  const filePath = getLocalFilePath(entity);
-  res.download(filePath, entity.name, (err) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('File download failed');
-    }
-  });
-}
-async function createFolder(req, res) {
-  const parentId = req.query.parent ? parseInt(req.query.parent) : null;
-  const parent = parentId
-    ? await prisma.entity.findFirst({
-        where: { id: parentId, userId: req.user.id, type: 'FOLDER' },
-      })
-    : null;
-
-  if (parent) {
-    await prisma.entity.create({
-      data: {
-        name: req.body.name,
-        type: 'FOLDER',
+async function renderEntityView(req, res, next) {
+  try {
+    const entity = await prisma.entity.findFirst({
+      where: {
+        id: parseInt(req.params.id),
         userId: req.user.id,
-        parentId: parentId,
       },
     });
-  }
 
-  const redirectUrl = parentId ? `/entities/${parentId}` : '/dashboard';
-  res.redirect(redirectUrl);
+    if (!entity) {
+      const error = new Error('Entity not found');
+      error.status = 404;
+      throw error;
+    }
+
+    const children = await prisma.entity.findMany({
+      where: {
+        userId: req.user.id,
+        parentId: parseInt(req.params.id),
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const breadcrumbs = await buildBreadcrumbs(entity);
+
+    if (entity.type === 'FOLDER') {
+      // folder view
+      res.render('dashboard/dashboard', {
+        entities: children,
+        user: req.user,
+        currentFolderId: parseInt(req.params.id),
+        breadcrumbs: breadcrumbs,
+      });
+    } else {
+      res.render('entities/file', {
+        file: entity,
+        user: req.user,
+        currentFolderId: parseInt(req.params.id),
+        breadcrumbs: breadcrumbs,
+      });
+    }
+  } catch (error) {
+    console.error('Render entity error:', error);
+    next(error);
+  }
 }
 
-export { renderEntityView, createFolder, downloadEntity };
+async function downloadEntity(req, res, next) {
+  try {
+    const entity = await prisma.entity.findFirst({
+      where: {
+        id: parseInt(req.params.id),
+        userId: req.user.id,
+        type: 'FILE',
+      },
+    });
+
+    if (!entity) {
+      const error = new Error('File not found');
+      error.status = 404;
+      throw error;
+    }
+
+    if (!entity.storageKey) {
+      const error = new Error('File storage key missing. This file cannot be downloaded.');
+      error.status = 400;
+      throw error;
+    }
+
+    const filePath = getLocalFilePath(entity);
+
+    res.download(filePath, entity.name, (err) => {
+      if (err) {
+        console.error('Download error:', err);
+        if (!res.headersSent) {
+          next(err);
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Download entity error:', error);
+    next(error);
+  }
+}
+
+async function renameEntity(req, res, next) {
+  try {
+    const { id } = req.params;
+    const newName = req.body.name;
+
+    const updatedEntity = await renameEntityService(id, req.user.id, newName);
+    const redirectUrl = updatedEntity.parentId
+      ? `/entities/${updatedEntity.parentId}`
+      : '/dashboard';
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error('Rename failed:', error);
+
+    // Set appropriate status code
+    if (error.message.includes('already exists')) {
+      error.status = 409;
+    } else if (error.message.includes('not found') || error.message.includes('access denied')) {
+      error.status = 404;
+    } else if (!error.status) {
+      error.status = 500;
+    }
+
+    next(error);
+  }
+}
+
+async function createFolder(req, res, next) {
+  try {
+    const parentId = req.query.parent ? parseInt(req.query.parent) : null;
+
+    if (parentId) {
+      const parent = await prisma.entity.findFirst({
+        where: { id: parentId, userId: req.user.id, type: 'FOLDER' },
+      });
+
+      if (!parent) {
+        const error = new Error('Invalid parent folder');
+        error.status = 404;
+        throw error;
+      }
+
+      await prisma.entity.create({
+        data: {
+          name: req.body.name,
+          type: 'FOLDER',
+          userId: req.user.id,
+          parentId: parentId,
+        },
+      });
+    } else {
+      await prisma.entity.create({
+        data: {
+          name: req.body.name,
+          type: 'FOLDER',
+          userId: req.user.id,
+          parentId: null,
+        },
+      });
+    }
+
+    const redirectUrl = parentId ? `/entities/${parentId}` : '/dashboard';
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error('Create folder error:', error);
+    next(error);
+  }
+}
+
+export { renderEntityView, createFolder, downloadEntity, renameEntity };

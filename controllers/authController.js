@@ -17,28 +17,33 @@ export function renderRegister(req, res) {
   res.render('auth/register', { error: null });
 }
 
-export async function register(req, res) {
-  const { username, password } = req.body;
+export async function register(req, res, next) {
+  try {
+    const { username, password } = req.body;
 
-  // validate (already run via middleware)
-  //TODO validationService
+    // validate (already run via middleware)
+    //TODO validationService
 
-  // 2. check uniqueness
-  const existing = await prisma.user.findUnique({ where: { username } });
-  if (existing) {
-    return res.render('auth/register', { error: 'User already exists' });
+    // 2. check uniqueness
+    const existing = await prisma.user.findUnique({ where: { username } });
+    if (existing) {
+      return res.render('auth/register', { error: 'User already exists' });
+    }
+
+    // 3. hash
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // 4. persist
+    await prisma.user.create({
+      data: { username, password: hashedPassword },
+    });
+
+    // 5. redirect
+    res.redirect('/login');
+  } catch (error) {
+    console.error('Registration error:', error);
+    next(error);
   }
-
-  // 3. hash
-  const hashedPassword = await bcrypt.hash(password, 12);
-
-  // 4. persist
-  await prisma.user.create({
-    data: { username, password: hashedPassword },
-  });
-
-  // 5. redirect
-  res.redirect('/login');
 }
 
 export function logout(req, res) {

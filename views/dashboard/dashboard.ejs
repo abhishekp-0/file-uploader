@@ -29,10 +29,28 @@
     <% } %>
     <div>
       <ul>
-        <% for( let i = 0; i  < entities.length; i ++ )  { %>
-          <a href="/entities/<%= entities[i].id %>">
-            <li><%- entities[i].name %>(<%- entities[i].type %>)</li>
-          </a>
+        <% const returnTo = currentFolderId ? (`/entities/${currentFolderId}`) : '/dashboard'; %>
+
+        <% for (let i = 0; i < entities.length; i++) { %>
+          <li>
+            <a href="/entities/<%= entities[i].id %>">
+              <%- entities[i].name %>(<%- entities[i].type %>)
+            </a>
+
+            <button type="button" data-action="rename-toggle" data-entity-id="<%= entities[i].id %>">
+              Rename
+            </button>
+
+            <form
+              method="POST"
+              action="/entities/<%= entities[i].id %>?_method=PUT"
+              data-rename-form="<%= entities[i].id %>"
+              hidden
+            >
+              <input type="text" name="name" value="<%= entities[i].name %>" required />
+              <button type="submit">Save</button>
+            </form>
+          </li>
         <% } %>
       </ul>
     </div>
@@ -57,4 +75,5 @@
       <button type="submit">Upload File</button>
     </form>
   </body>
+  <script src="/dashboard.js" defer></script>
 </html>
