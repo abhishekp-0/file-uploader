@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
+    <title>File - <%= file.name %></title>
   </head>
   <body>
     <header>
-      <h1>Dashboard</h1>
+      <h1>File Details</h1>
       <p>Welcome, <strong><%= user.username %></strong>!</p>
       <form method="post" action="/logout">
         <button>logout</button>
@@ -17,7 +17,9 @@
       <ol>
         <li><a href="/dashboard">root</a></li>
         <% for( let i = 0; i < breadcrumbs.length; i++ ) { %>
-          <li><a href="/entities/<%- breadcrumbs[i].id%>"><%= breadcrumbs[i].name %></a></li>
+          <% if (breadcrumbs[i].type === 'FOLDER') { %>
+            <li><a href="/folders/<%- breadcrumbs[i].id%>"><%= breadcrumbs[i].name %></a></li>
+          <% } %>
         <% } %>
       </ol>
     </nav>
@@ -33,7 +35,7 @@
         <li>Size: <%=file.size%> bytes</li>
         <li>Type: <%=file.mimeType%></li>
         <li>Created at: <%=file.createdAt%></li>
-        <li><a href="/entities/<%= file.id %>/download"><button>Download</button></a></li>
+        <li><a href="/files/<%= file.id %>/download"><button>Download</button></a></li>
       </ul>
     </div>
   </br>

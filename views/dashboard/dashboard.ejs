@@ -17,7 +17,7 @@
       <ol>
         <li><a href="/dashboard">root</a></li>
         <% for( let i = 0; i < breadcrumbs.length; i++ ) { %>
-          <li><a href="/entities/<%- breadcrumbs[i].id%>"><%= breadcrumbs[i].name %></a></li>
+          <li><a href="/folders/<%- breadcrumbs[i].id%>"><%= breadcrumbs[i].name %></a></li>
         <% } %>
       </ol>
     </nav>
@@ -29,21 +29,30 @@
     <% } %>
     <div>
       <ul>
-        <% const returnTo = currentFolderId ? (`/entities/${currentFolderId}`) : '/dashboard'; %>
+        <% const returnTo = currentFolderId ? (`/folders/${currentFolderId}`) : '/dashboard'; %>
 
         <% for (let i = 0; i < entities.length; i++) { %>
           <li>
-            <a href="/entities/<%= entities[i].id %>">
-              <%- entities[i].name %>(<%- entities[i].type %>)
-            </a>
+            <% if (entities[i].type === 'FOLDER') { %>
+              <a href="/folders/<%= entities[i].id %>">
+                <%- entities[i].name %> (FOLDER)
+              </a>
+            <% } else { %>
+              <a href="/files/<%= entities[i].id %>">
+                <%- entities[i].name %> (FILE)
+              </a>
+            <% } %>
 
             <button type="button" data-action="rename-toggle" data-entity-id="<%= entities[i].id %>">
               Rename
             </button>
 
+            <% const renameAction = entities[i].type === 'FOLDER' 
+              ? `/folders/${entities[i].id}?_method=PUT` 
+              : `/files/${entities[i].id}?_method=PUT`; %>
             <form
               method="POST"
-              action="/entities/<%= entities[i].id %>?_method=PUT"
+              action="<%= renameAction %>"
               data-rename-form="<%= entities[i].id %>"
               hidden
             >
@@ -56,7 +65,7 @@
     </div>
   </br>
   <h2>Add a Folder</h2>
-    <form method="POST" action="/entities/folder?parent=<%= currentFolderId || '' %>">
+    <form method="POST" action="/folders?parent=<%= currentFolderId || '' %>">
       <div>
         <label for="name">Folder Name:</label>
         <input type="text" id="name" name="name" required />

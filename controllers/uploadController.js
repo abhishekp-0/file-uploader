@@ -1,6 +1,6 @@
-import { prisma } from '../config/prisma.js';
+import { createFile } from '../services/fileService.js';
+import { validateParentFolder } from '../services/folderService.js';
 import fs from 'fs/promises';
-import { validateParentId } from '../services/entityService.js';
 
 export async function uploadFile(req, res, next) {
   const file = req.file;
@@ -13,25 +13,15 @@ export async function uploadFile(req, res, next) {
       throw error;
     }
 
-    const parent = await validateParentId(parentId, req.user.id);
-
-    await prisma.entity.create({
-      data: {
-        name: file.originalname,
-        type: 'FILE',
-        size: file.size,
-        mimeType: file.mimetype,
-        storageKey: file.filename,
-        parentId: parent ? parseInt(parentId) : null,
-        userId: req.user.id,
-      },
-    });
-
-    if (parent) {
-      return res.redirect(`/entities/${parent.id}`);
+    // Validate parent folder if provided
+    if (parentId) {
+      await validateParentFolder(parentId, req.user.id);
     }
 
-    return res.redirect('/dashboard');
+    await createFile(file, req.user.id, parentId);
+
+    const redirectUrl = parentId ? `/folders/${parentId}` : '/dashboard';
+    return res.redirect(redirectUrl);
   } catch (error) {
     console.error('Upload error:', error);
 
