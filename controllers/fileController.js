@@ -1,4 +1,8 @@
-import { getFileById, renameFile as renameFileService } from '../services/fileService.js';
+import {
+  getFileById,
+  renameFile as renameFileService,
+  deleteFile as deleteFileService,
+} from '../services/fileService.js';
 import { buildBreadcrumbs } from '../services/entityService.js';
 import { getLocalFilePath } from '../services/fileService.js';
 
@@ -82,4 +86,24 @@ async function renameFile(req, res, next) {
   }
 }
 
-export { viewFile, downloadFile, renameFile };
+async function deleteFile(req, res, next) {
+  try {
+    const fileId = req.params.id;
+    const deletedFile = await deleteFileService(fileId, req.user.id);
+
+    const redirectUrl = deletedFile.parentId ? `/folders/${deletedFile.parentId}` : '/dashboard';
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error('Delete file error:', error);
+
+    if (error.message.includes('not found')) {
+      error.status = 404;
+    } else if (!error.status) {
+      error.status = 500;
+    }
+
+    next(error);
+  }
+}
+
+export { viewFile, downloadFile, renameFile, deleteFile };

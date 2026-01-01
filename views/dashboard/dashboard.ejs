@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard</title>
+    <!-- <link rel="stylesheet" href="/style.css" /> -->
   </head>
   <body>
     <header>
@@ -47,6 +48,17 @@
               Rename
             </button>
 
+            <button 
+              type="button" 
+              class="delete-btn" 
+              data-action="delete-toggle" 
+              data-entity-id="<%= entities[i].id %>"
+              data-entity-name="<%= entities[i].name %>"
+              data-entity-type="<%= entities[i].type %>"
+            >
+              Delete
+            </button>
+
             <% const renameAction = entities[i].type === 'FOLDER' 
               ? `/folders/${entities[i].id}?_method=PUT` 
               : `/files/${entities[i].id}?_method=PUT`; %>
@@ -58,7 +70,24 @@
             >
               <input type="text" name="name" value="<%= entities[i].name %>" required />
               <button type="submit">Save</button>
+              <button type="button" data-action="cancel-rename" data-entity-id="<%= entities[i].id %>">Cancel</button>
             </form>
+
+            <% const deleteAction = entities[i].type === 'FOLDER' 
+              ? `/folders/${entities[i].id}?_method=DELETE` 
+              : `/files/${entities[i].id}?_method=DELETE`; %>
+            <div data-delete-confirm="<%= entities[i].id %>" class="delete-confirm" hidden>
+              <p class="delete-warning">
+                Are you sure you want to delete "<strong><%= entities[i].name %></strong>"?
+                <% if (entities[i].type === 'FOLDER') { %>
+                  <br><em>This will delete all contents inside this folder.</em>
+                <% } %>
+              </p>
+              <form method="POST" action="<%= deleteAction %>">
+                <button type="submit" class="confirm-delete-btn">Yes, Delete</button>
+                <button type="button" data-action="cancel-delete" data-entity-id="<%= entities[i].id %>">Cancel</button>
+              </form>
+            </div>
           </li>
         <% } %>
       </ul>

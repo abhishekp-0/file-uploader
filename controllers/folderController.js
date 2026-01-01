@@ -3,6 +3,7 @@ import {
   getFolderById,
   getFolderContents,
   renameFolder as renameFolderService,
+  deleteFolder as deleteFolderService,
 } from '../services/folderService.js';
 import { buildBreadcrumbs } from '../services/entityService.js';
 
@@ -92,4 +93,26 @@ async function renameFolder(req, res, next) {
   }
 }
 
-export { viewFolder, createFolder, renameFolder };
+async function deleteFolder(req, res, next) {
+  try {
+    const folderId = req.params.id;
+    const deletedFolder = await deleteFolderService(folderId, req.user.id);
+
+    const redirectUrl = deletedFolder.parentId
+      ? `/folders/${deletedFolder.parentId}`
+      : '/dashboard';
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error('Delete folder error:', error);
+
+    if (error.message.includes('not found')) {
+      error.status = 404;
+    } else if (!error.status) {
+      error.status = 500;
+    }
+
+    next(error);
+  }
+}
+
+export { viewFolder, createFolder, renameFolder, deleteFolder };

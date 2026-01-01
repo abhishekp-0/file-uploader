@@ -1,0 +1,120 @@
+/* Delete button - visually destructive (red) */
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+  padding: 4px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.delete-btn:active {
+  background-color: #bd2130;
+}
+
+/* Delete confirmation container */
+.delete-confirm {
+  margin-top: 8px;
+  padding: 12px;
+  background-color: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 4px;
+}
+
+.delete-warning {
+  margin: 0 0 12px 0;
+  color: #856404;
+}
+
+.delete-warning strong {
+  color: #721c24;
+}
+
+.delete-warning em {
+  color: #721c24;
+  font-weight: 600;
+}
+
+/* Confirm delete button - very red */
+.confirm-delete-btn {
+  background-color: #bd2130;
+  color: white;
+  border: 1px solid #bd2130;
+  padding: 6px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+.confirm-delete-btn:hover {
+  background-color: #a71d2a;
+  border-color: #a71d2a;
+}
+
+.confirm-delete-btn:active {
+  background-color: #8b1924;
+}
+
+/* Rename form styling */
+[data-rename-form] {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+[data-rename-form] input[type='text'] {
+  padding: 4px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  margin-right: 8px;
+  min-width: 200px;
+}
+
+[data-rename-form] button[type='submit'] {
+  background-color: #28a745;
+  color: white;
+  border: 1px solid #28a745;
+  padding: 4px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+[data-rename-form] button[type='submit']:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+[data-rename-form] button[type='button'] {
+  background-color: #6c757d;
+  color: white;
+  border: 1px solid #6c757d;
+  padding: 4px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+[data-rename-form] button[type='button']:hover {
+  background-color: #5a6268;
+  border-color: #545b62;
+}
+
+/* General button styling */
+button {
+  font-family: inherit;
+}
+
+button:not(.delete-btn):not(.confirm-delete-btn):not([data-rename-form] button) {
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}

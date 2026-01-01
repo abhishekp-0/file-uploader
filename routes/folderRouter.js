@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { isAuthenticated } from '../middlewares/authMiddleware.js';
-import { viewFolder, createFolder, renameFolder } from '../controllers/folderController.js';
+import {
+  viewFolder,
+  createFolder,
+  renameFolder,
+  deleteFolder,
+} from '../controllers/folderController.js';
 
 export const folderRouter = Router();
 
@@ -14,3 +19,6 @@ folderRouter.post('/', createFolder);
 
 // Rename folder
 folderRouter.put('/:id', renameFolder);
+
+// Delete folder
+folderRouter.delete('/:id', deleteFolder);
