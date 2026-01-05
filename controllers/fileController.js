@@ -5,10 +5,23 @@ import {
 } from '../services/fileService.js';
 import { buildBreadcrumbs } from '../services/entityService.js';
 import { getLocalFilePath } from '../services/fileService.js';
+import fs from 'fs/promises';
+
+// Helper function for validation
+function validateFileId(id) {
+  const fileId = parseInt(id);
+  if (isNaN(fileId) || fileId <= 0) {
+    const error = new Error('Invalid file ID');
+    error.status = 400;
+    throw error;
+  }
+  return fileId;
+}
 
 async function viewFile(req, res, next) {
   try {
-    const fileId = parseInt(req.params.id);
+    const fileId = validateFileId(req.params.id);
+
     const file = await getFileById(fileId, req.user.id);
     const breadcrumbs = await buildBreadcrumbs(file);
 
@@ -31,8 +44,8 @@ async function viewFile(req, res, next) {
 
 async function downloadFile(req, res, next) {
   try {
-    const fileId = parseInt(req.params.id);
-    const file = await getFileById(fileId, req.user.id);
+    const fileId = validateFileId(req.params.id);
+    const file = await getFileById(fileId, req.user.id); // Verify DB entity
 
     if (!file.storageKey) {
       const error = new Error('File storage key missing. This file cannot be downloaded.');
@@ -42,11 +55,27 @@ async function downloadFile(req, res, next) {
 
     const filePath = getLocalFilePath(file);
 
+    //  Verify filesystem file exists
+    try {
+      await fs.access(filePath, fs.constants.F_OK);
+    } catch (fsError) {
+      //  Log the actual error
+      console.error(`File missing on disk: ${file.storageKey} (ID: ${fileId})`, fsError);
+
+      //  Show user-friendly message
+      const error = new Error('This file is unavailable. It may have been removed.');
+      error.status = 404;
+      throw error;
+    }
+
     res.download(filePath, file.name, (err) => {
       if (err) {
         console.error('Download error:', err);
         if (!res.headersSent) {
-          next(err);
+          // Even if download fails mid-stream, log it properly
+          const error = new Error('File download failed. Please try again.');
+          error.status = 500;
+          next(error);
         }
       }
     });
@@ -58,7 +87,7 @@ async function downloadFile(req, res, next) {
 
 async function renameFile(req, res, next) {
   try {
-    const fileId = req.params.id;
+    const fileId = validateFileId(req.params.id);
     const newName = req.body.name;
 
     if (!newName || !newName.trim()) {
@@ -88,7 +117,7 @@ async function renameFile(req, res, next) {
 
 async function deleteFile(req, res, next) {
   try {
-    const fileId = req.params.id;
+    const fileId = validateFileId(req.params.id);
     const deletedFile = await deleteFileService(fileId, req.user.id);
 
     const redirectUrl = deletedFile.parentId ? `/folders/${deletedFile.parentId}` : '/dashboard';

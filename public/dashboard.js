@@ -64,7 +64,70 @@ document.addEventListener('click', (event) => {
   }
 });
 
-// Prevent accidental form submission on Enter in rename input
+// Modal handling
+const folderModal = document.getElementById('folder-modal');
+const uploadModal = document.getElementById('upload-modal');
+
+// Open folder modal
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-action="open-folder-modal"]');
+  if (!button) return;
+
+  folderModal.showModal();
+});
+
+// Close folder modal
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-action="close-folder-modal"]');
+  if (!button) return;
+
+  folderModal.close();
+});
+
+// Open upload modal
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-action="open-upload-modal"]');
+  if (!button) return;
+
+  uploadModal.showModal();
+});
+
+// Close upload modal
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-action="close-upload-modal"]');
+  if (!button) return;
+
+  uploadModal.close();
+});
+
+// Close modals on ESC or clicking backdrop
+folderModal.addEventListener('click', (event) => {
+  const rect = folderModal.getBoundingClientRect();
+  const isInDialog =
+    rect.top <= event.clientY &&
+    event.clientY <= rect.top + rect.height &&
+    rect.left <= event.clientX &&
+    event.clientX <= rect.left + rect.width;
+
+  if (!isInDialog) {
+    folderModal.close();
+  }
+});
+
+uploadModal.addEventListener('click', (event) => {
+  const rect = uploadModal.getBoundingClientRect();
+  const isInDialog =
+    rect.top <= event.clientY &&
+    event.clientY <= rect.top + rect.height &&
+    rect.left <= event.clientX &&
+    event.clientX <= rect.left + rect.width;
+
+  if (!isInDialog) {
+    uploadModal.close();
+  }
+});
+
+// Keyboard shortcuts
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
     // Close all open forms/confirmations on Escape

@@ -100,18 +100,21 @@ async function renameFolder(folderId, userId, newName) {
   });
 }
 
-async function collectDescendantFiles(folderId) {
+async function collectDescendantFiles(folderId, userId) {
   const files = [];
 
   const children = await prisma.entity.findMany({
-    where: { parentId: parseInt(folderId) },
+    where: {
+      parentId: parseInt(folderId),
+      userId: userId,
+    },
   });
 
   for (const child of children) {
     if (child.type === 'FILE') {
       files.push(child);
     } else {
-      const nestedFiles = await collectDescendantFiles(child.id);
+      const nestedFiles = await collectDescendantFiles(child.id, userId);
       files.push(...nestedFiles);
     }
   }
@@ -123,7 +126,7 @@ async function deleteFolder(folderId, userId) {
   const folder = await getFolderById(folderId, userId);
 
   // Collect all descendant files recursively
-  const descendantFiles = await collectDescendantFiles(folderId);
+  const descendantFiles = await collectDescendantFiles(folderId, userId);
 
   // Delete folder entity (DB cascade will delete all children)
   await prisma.entity.delete({

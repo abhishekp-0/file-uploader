@@ -11,6 +11,7 @@ import { dashboardRouter } from './routes/dashboardRouter.js';
 import { folderRouter } from './routes/folderRouter.js';
 import { fileRouter } from './routes/fileRouter.js';
 import uploadRouter from './routes/uploadRouter.js';
+import { mapServiceErrors } from './middlewares/errorMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,13 +45,31 @@ app.use('/folders', folderRouter);
 app.use('/files', fileRouter);
 app.use('/', uploadRouter);
 
+// Map service errors to HTTP codes
+app.use(mapServiceErrors);
+
 // Error handling middleware
 app.use((err, req, res, _next) => {
   const status = err.status || 500;
-  const message = err.message || 'Internal Server Error';
 
-  res.status(status).render('error', {
-    message: message,
+  // Log internal errors (but never expose to user)
+  if (status === 500) {
+    console.error('Internal server error:', err);
+  }
+
+  // Sanitize message
+  let userMessage = err.message || 'An error occurred';
+
+  // For 500 errors, use generic message
+  if (status === 500) {
+    userMessage = 'An unexpected error occurred while processing your request.';
+  }
+
+  // Render appropriate error template
+  const template = status === 404 ? 'errors/404' : 'errors/500';
+
+  res.status(status).render(template, {
+    message: userMessage,
     status: status,
     user: req.user || null,
   });

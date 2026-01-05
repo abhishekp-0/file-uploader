@@ -3,16 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>File - <%= file.name %></title>
+    <title><%= file.name %> - File Uploader</title>
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <header>
-      <h1>File Details</h1>
+      <h1>Dashboard</h1>
       <p>Welcome, <strong><%= user.username %></strong>!</p>
       <form method="post" action="/logout">
         <button>logout</button>
       </form>
     </header>
+    
     <nav aria-label="Breadcrumb">
       <ol>
         <li><a href="/dashboard">root</a></li>
@@ -21,26 +23,86 @@
             <li><a href="/folders/<%- breadcrumbs[i].id%>"><%= breadcrumbs[i].name %></a></li>
           <% } %>
         <% } %>
+        <li class="current"><%= file.name %></li>
       </ol>
     </nav>
+    
     <br>
-    <% if (breadcrumbs.length>0) { %>
-      <h2><%= breadcrumbs[breadcrumbs.length-1].name %></h2>
-    <% } else { %>
-     <h2>Root</h2>
-    <% } %>
-    <div>
-      <ul>
-        <li>Name: <%= file.name %></li>
-        <li>Size: <%=file.size%> bytes</li>
-        <li>Type: <%=file.mimeType%></li>
-        <li>Created at: <%=file.createdAt%></li>
-        <li><a href="/files/<%= file.id %>/download"><button>Download</button></a></li>
-      </ul>
-    </div>
-  </br>
-  
+    <h2>File Details</h2>
 
-  
+    <!-- Action buttons -->
+    <div class="action-buttons">
+      <a href="/files/<%= file.id %>/download" class="action-btn">Download</a>
+      <% if (file.parentId) { %>
+        <a href="/folders/<%= file.parentId %>" class="secondary-btn">Back to Folder</a>
+      <% } else { %>
+        <a href="/dashboard" class="secondary-btn">Back to Dashboard</a>
+      <% } %>
+    </div>
+
+    <div class="file-details">
+      <div class="file-info">
+        <div class="info-row">
+          <span class="info-label">Name:</span>
+          <span class="info-value"><%= file.name %></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Size:</span>
+          <span class="info-value"><%= (file.size / 1024).toFixed(2) %> KB</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Type:</span>
+          <span class="info-value"><%= file.mimeType %></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Created:</span>
+          <span class="info-value"><%= new Date(file.createdAt).toLocaleString() %></span>
+        </div>
+      </div>
+
+      <!-- File actions -->
+      <div class="file-actions">
+        <h3>Actions</h3>
+        
+        <button type="button" data-action="rename-toggle" data-entity-id="<%= file.id %>">
+          Rename
+        </button>
+
+        <button 
+          type="button" 
+          class="delete-btn" 
+          data-action="delete-toggle" 
+          data-entity-id="<%= file.id %>"
+          data-entity-name="<%= file.name %>"
+        >
+          Delete
+        </button>
+
+        <!-- Rename form -->
+        <form
+          method="POST"
+          action="/files/<%= file.id %>?_method=PUT"
+          data-rename-form="<%= file.id %>"
+          hidden
+        >
+          <input type="text" name="name" value="<%= file.name %>" required />
+          <button type="submit">Save</button>
+          <button type="button" data-action="cancel-rename" data-entity-id="<%= file.id %>">Cancel</button>
+        </form>
+
+        <!-- Delete confirmation -->
+        <div data-delete-confirm="<%= file.id %>" class="delete-confirm" hidden>
+          <p class="delete-warning">
+            Are you sure you want to delete "<strong><%= file.name %></strong>"?
+          </p>
+          <form method="POST" action="/files/<%= file.id %>?_method=DELETE">
+            <button type="submit" class="confirm-delete-btn">Yes, Delete</button>
+            <button type="button" data-action="cancel-delete" data-entity-id="<%= file.id %>">Cancel</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="/dashboard.js" defer></script>
   </body>
 </html>

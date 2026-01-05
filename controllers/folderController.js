@@ -7,9 +7,20 @@ import {
 } from '../services/folderService.js';
 import { buildBreadcrumbs } from '../services/entityService.js';
 
+// Helper function for validation
+function validateFolderId(id) {
+  const folderId = parseInt(id);
+  if (isNaN(folderId) || folderId <= 0) {
+    const error = new Error('Invalid folder ID');
+    error.status = 400;
+    throw error;
+  }
+  return folderId;
+}
+
 async function viewFolder(req, res, next) {
   try {
-    const folderId = parseInt(req.params.id);
+    const folderId = validateFolderId(req.params.id);
     const folder = await getFolderById(folderId, req.user.id);
     const children = await getFolderContents(folderId, req.user.id);
     const breadcrumbs = await buildBreadcrumbs(folder);
@@ -21,12 +32,6 @@ async function viewFolder(req, res, next) {
       breadcrumbs: breadcrumbs,
     });
   } catch (error) {
-    console.error('View folder error:', error);
-
-    if (error.message.includes('not found')) {
-      error.status = 404;
-    }
-
     next(error);
   }
 }
@@ -42,28 +47,23 @@ async function createFolder(req, res, next) {
       throw error;
     }
 
-    const folder = await createFolderService(folderName, req.user.id, parentId);
+    // parentId can be null (root), validate only if provided
+    if (parentId !== null) {
+      validateFolderId(parentId);
+    }
+
+    await createFolderService(folderName, req.user.id, parentId);
 
     const redirectUrl = parentId ? `/folders/${parentId}` : '/dashboard';
     res.redirect(redirectUrl);
   } catch (error) {
-    console.error('Create folder error:', error);
-
-    if (error.message.includes('already exists')) {
-      error.status = 409;
-    } else if (error.message.includes('Invalid parent')) {
-      error.status = 404;
-    } else if (!error.status) {
-      error.status = 500;
-    }
-
     next(error);
   }
 }
 
 async function renameFolder(req, res, next) {
   try {
-    const folderId = req.params.id;
+    const folderId = validateFolderId(req.params.id);
     const newName = req.body.name;
 
     if (!newName || !newName.trim()) {
@@ -79,23 +79,13 @@ async function renameFolder(req, res, next) {
       : '/dashboard';
     res.redirect(redirectUrl);
   } catch (error) {
-    console.error('Rename folder error:', error);
-
-    if (error.message.includes('already exists')) {
-      error.status = 409;
-    } else if (error.message.includes('not found')) {
-      error.status = 404;
-    } else if (!error.status) {
-      error.status = 500;
-    }
-
     next(error);
   }
 }
 
 async function deleteFolder(req, res, next) {
   try {
-    const folderId = req.params.id;
+    const folderId = validateFolderId(req.params.id);
     const deletedFolder = await deleteFolderService(folderId, req.user.id);
 
     const redirectUrl = deletedFolder.parentId
@@ -103,14 +93,6 @@ async function deleteFolder(req, res, next) {
       : '/dashboard';
     res.redirect(redirectUrl);
   } catch (error) {
-    console.error('Delete folder error:', error);
-
-    if (error.message.includes('not found')) {
-      error.status = 404;
-    } else if (!error.status) {
-      error.status = 500;
-    }
-
     next(error);
   }
 }

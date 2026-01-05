@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
-    <!-- <link rel="stylesheet" href="/style.css" /> -->
+    <title>File Uploader</title>
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <header>
@@ -28,90 +28,125 @@
     <% } else { %>
      <h2>Root</h2>
     <% } %>
-    <div>
-      <ul>
-        <% const returnTo = currentFolderId ? (`/folders/${currentFolderId}`) : '/dashboard'; %>
 
-        <% for (let i = 0; i < entities.length; i++) { %>
-          <li>
-            <% if (entities[i].type === 'FOLDER') { %>
-              <a href="/folders/<%= entities[i].id %>">
-                <%- entities[i].name %> (FOLDER)
-              </a>
-            <% } else { %>
-              <a href="/files/<%= entities[i].id %>">
-                <%- entities[i].name %> (FILE)
-              </a>
-            <% } %>
-
-            <button type="button" data-action="rename-toggle" data-entity-id="<%= entities[i].id %>">
-              Rename
-            </button>
-
-            <button 
-              type="button" 
-              class="delete-btn" 
-              data-action="delete-toggle" 
-              data-entity-id="<%= entities[i].id %>"
-              data-entity-name="<%= entities[i].name %>"
-              data-entity-type="<%= entities[i].type %>"
-            >
-              Delete
-            </button>
-
-            <% const renameAction = entities[i].type === 'FOLDER' 
-              ? `/folders/${entities[i].id}?_method=PUT` 
-              : `/files/${entities[i].id}?_method=PUT`; %>
-            <form
-              method="POST"
-              action="<%= renameAction %>"
-              data-rename-form="<%= entities[i].id %>"
-              hidden
-            >
-              <input type="text" name="name" value="<%= entities[i].name %>" required />
-              <button type="submit">Save</button>
-              <button type="button" data-action="cancel-rename" data-entity-id="<%= entities[i].id %>">Cancel</button>
-            </form>
-
-            <% const deleteAction = entities[i].type === 'FOLDER' 
-              ? `/folders/${entities[i].id}?_method=DELETE` 
-              : `/files/${entities[i].id}?_method=DELETE`; %>
-            <div data-delete-confirm="<%= entities[i].id %>" class="delete-confirm" hidden>
-              <p class="delete-warning">
-                Are you sure you want to delete "<strong><%= entities[i].name %></strong>"?
-                <% if (entities[i].type === 'FOLDER') { %>
-                  <br><em>This will delete all contents inside this folder.</em>
-                <% } %>
-              </p>
-              <form method="POST" action="<%= deleteAction %>">
-                <button type="submit" class="confirm-delete-btn">Yes, Delete</button>
-                <button type="button" data-action="cancel-delete" data-entity-id="<%= entities[i].id %>">Cancel</button>
-              </form>
-            </div>
-          </li>
-        <% } %>
-      </ul>
+    <!-- Action buttons -->
+    <div class="action-buttons">
+      <button type="button" class="action-btn" data-action="open-folder-modal">
+        New Folder
+      </button>
+      <button type="button" class="action-btn" data-action="open-upload-modal">
+        Upload File
+      </button>
     </div>
-  </br>
-  <h2>Add a Folder</h2>
-    <form method="POST" action="/folders?parent=<%= currentFolderId || '' %>">
-      <div>
-        <label for="name">Folder Name:</label>
-        <input type="text" id="name" name="name" required />
-      </div>
-      
-      <button type="submit">Add Folder</button>
-    </form>
-  </body>
 
-  <h2>Upload a File</h2>
-    <form method="POST" action="/upload/file?parentId=<%= currentFolderId || '' %>" enctype="multipart/form-data">
-      <div>
-        <input type="file" name="file" required />
+    <div>
+      <% if (entities.length === 0) { %>
+        <div class="empty-state">
+          <p class="empty-message">This folder is empty</p>
+          <p class="empty-hint">Upload files or create a new folder to get started.</p>
+        </div>
+      <% } else { %>
+        <ul>
+          <% const returnTo = currentFolderId ? (`/folders/${currentFolderId}`) : '/dashboard'; %>
+
+          <% for (let i = 0; i < entities.length; i++) { %>
+            <li>
+              <% if (entities[i].type === 'FOLDER') { %>
+                <a href="/folders/<%= entities[i].id %>">
+                  <%- entities[i].name %> (FOLDER)
+                </a>
+              <% } else { %>
+                <a href="/files/<%= entities[i].id %>">
+                  <%- entities[i].name %> (FILE)
+                </a>
+              <% } %>
+
+              <button type="button" data-action="rename-toggle" data-entity-id="<%= entities[i].id %>">
+                Rename
+              </button>
+
+              <button 
+                type="button" 
+                class="delete-btn" 
+                data-action="delete-toggle" 
+                data-entity-id="<%= entities[i].id %>"
+                data-entity-name="<%= entities[i].name %>"
+                data-entity-type="<%= entities[i].type %>"
+              >
+                Delete
+              </button>
+
+              <% const renameAction = entities[i].type === 'FOLDER' 
+                ? `/folders/${entities[i].id}?_method=PUT` 
+                : `/files/${entities[i].id}?_method=PUT`; %>
+              <form
+                method="POST"
+                action="<%= renameAction %>"
+                data-rename-form="<%= entities[i].id %>"
+                hidden
+              >
+                <input type="text" name="name" value="<%= entities[i].name %>" required />
+                <button type="submit">Save</button>
+                <button type="button" data-action="cancel-rename" data-entity-id="<%= entities[i].id %>">Cancel</button>
+              </form>
+
+              <% const deleteAction = entities[i].type === 'FOLDER' 
+                ? `/folders/${entities[i].id}?_method=DELETE` 
+                : `/files/${entities[i].id}?_method=DELETE`; %>
+              <div data-delete-confirm="<%= entities[i].id %>" class="delete-confirm" hidden>
+                <p class="delete-warning">
+                  Are you sure you want to delete "<strong><%= entities[i].name %></strong>"?
+                  <% if (entities[i].type === 'FOLDER') { %>
+                    <br><em>This will delete all contents inside this folder.</em>
+                  <% } %>
+                </p>
+                <form method="POST" action="<%= deleteAction %>">
+                  <button type="submit" class="confirm-delete-btn">Yes, Delete</button>
+                  <button type="button" data-action="cancel-delete" data-entity-id="<%= entities[i].id %>">Cancel</button>
+                </form>
+              </div>
+            </li>
+          <% } %>
+        </ul>
+      <% } %>
+    </div>
+
+    <!-- Create Folder Modal -->
+    <dialog id="folder-modal" class="modal">
+      <div class="modal-content">
+        <h2>Create New Folder</h2>
+        <form method="POST" action="/folders?parent=<%= currentFolderId || '' %>">
+          <div class="form-group">
+            <label for="folder-name">Folder Name:</label>
+            <input type="text" id="folder-name" name="name" required autofocus />
+          </div>
+          
+          <div class="modal-actions">
+            <button type="submit" class="primary-btn">Create Folder</button>
+            <button type="button" class="secondary-btn" data-action="close-folder-modal">Cancel</button>
+          </div>
+        </form>
       </div>
-      
-      <button type="submit">Upload File</button>
-    </form>
-  </body>
+    </dialog>
+
+    <!-- Upload File Modal -->
+    <dialog id="upload-modal" class="modal">
+      <div class="modal-content">
+        <h2>Upload File</h2>
+        <form method="POST" action="/upload/file?parentId=<%= currentFolderId || '' %>" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="file-input">Choose File:</label>
+            <input type="file" id="file-input" name="file" required />
+          </div>
+          
+          <div class="modal-actions">
+            <button type="submit" class="primary-btn">Upload</button>
+            <button type="button" class="secondary-btn" data-action="close-upload-modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
   <script src="/dashboard.js" defer></script>
+  </body>
 </html>

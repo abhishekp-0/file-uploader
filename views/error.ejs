@@ -4,17 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Error <%= status %></title>
+    <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
     <div class="error-container">
         <h1 class="error-code"><%= status || 500 %></h1>
         <p class="error-message"><%= message || 'An error occurred' %></p>
+        
+        <% if (status === 404) { %>
+            <p class="error-explanation">
+                This item may have been deleted or moved.
+            </p>
+        <% } %>
+        
         <% if (user) { %>
             <div class="user-info">
-                <p>Logged in as: <%= user.username || user.email || user %></p>
+                <p>Logged in as: <%= user.username %></p>
             </div>
         <% } %>
-        <p><a href="/">Return to Home</a></p>
+        
+        <div class="error-actions">
+            <% if (user) { %>
+                <a href="/dashboard" class="primary-btn">Go back to Dashboard</a>
+            <% } else { %>
+                <a href="/" class="primary-btn">Return to Home</a>
+            <% } %>
+        </div>
     </div>
 </body>
 </html>

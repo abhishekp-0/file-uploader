@@ -1,5 +1,4 @@
-import { prisma } from '../config/prisma.js';
-import bcrypt from 'bcrypt';
+import { checkUserExists, createUser } from '../services/userService.js';
 import passport from 'passport';
 
 export function renderLogin(req, res) {
@@ -21,24 +20,12 @@ export async function register(req, res, next) {
   try {
     const { username, password } = req.body;
 
-    // validate (already run via middleware)
-    //TODO validationService
-
-    // 2. check uniqueness
-    const existing = await prisma.user.findUnique({ where: { username } });
-    if (existing) {
+    const userExists = await checkUserExists(username);
+    if (userExists) {
       return res.render('auth/register', { error: 'User already exists' });
     }
 
-    // 3. hash
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // 4. persist
-    await prisma.user.create({
-      data: { username, password: hashedPassword },
-    });
-
-    // 5. redirect
+    await createUser(username, password);
     res.redirect('/login');
   } catch (error) {
     console.error('Registration error:', error);

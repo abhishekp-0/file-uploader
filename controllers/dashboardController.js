@@ -1,14 +1,8 @@
-import { prisma } from '../config/prisma.js';
+import { getRootEntities } from '../services/dashboardService.js';
 
 export async function renderDashboard(req, res, next) {
   try {
-    const entities = await prisma.entity.findMany({
-      where: {
-        userId: req.user.id,
-        parentId: null,
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+    const entities = await getRootEntities(req.user.id);
 
     res.render('dashboard/dashboard', {
       entities: entities,

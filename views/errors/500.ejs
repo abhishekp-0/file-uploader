@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Server Error</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+    <% if (user) { %>
+      <header>
+        <h1>Dashboard</h1>
+        <p>Welcome, <strong><%= user.username %></strong>!</p>
+        <form method="post" action="/logout">
+          <button>logout</button>
+        </form>
+      </header>
+    <% } %>
+    
+    <div class="error-container">
+        <h1 class="error-code">500</h1>
+        <h2 class="error-title">Something Went Wrong</h2>
+        <p class="error-message">
+            An unexpected error occurred while processing your request.
+        </p>
+        
+        <p class="error-explanation">
+            We've logged this issue and will look into it. Please try again later.
+        </p>
+        
+        <div class="error-actions">
+            <% if (user) { %>
+                <a href="/dashboard" class="primary-btn">Go to Dashboard</a>
+            <% } else { %>
+                <a href="/" class="primary-btn">Go to Home</a>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>
