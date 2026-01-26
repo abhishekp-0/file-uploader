@@ -1,6 +1,7 @@
 import path from 'path';
 import { prisma } from '../config/prisma.js';
 import fs from 'fs/promises';
+import cloudinary from '../config/cloudinary.js';
 
 export function getLocalFilePath(entity) {
   return path.join(process.cwd(), 'uploads', entity.storageKey);
@@ -23,7 +24,13 @@ async function getFileById(fileId, userId) {
 }
 
 async function createFile(fileData, userId, parentId = null) {
-  const { originalname, size, mimetype, filename } = fileData;
+  const { originalname, size, mimetype } = fileData;
+  const result = await cloudinary.uploader.upload(fileData.path, {
+    resource_type: 'auto',
+    use_filename: true,
+  });
+
+  await fs.unlink(fileData.path);
 
   return await prisma.entity.create({
     data: {
@@ -31,9 +38,10 @@ async function createFile(fileData, userId, parentId = null) {
       type: 'FILE',
       size: size,
       mimeType: mimetype,
-      storageKey: filename,
       parentId: parentId ? parseInt(parentId) : null,
       userId: userId,
+      fileUrl: result.secure_url,
+      storageKey: result.public_id,
     },
   });
 }

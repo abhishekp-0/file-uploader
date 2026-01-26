@@ -38,6 +38,7 @@ model Entity {
   parentId        Int?        // Optional field for parent folder
   userId          Int
   storageKey String?
+  fileUrl String?
   user            User        @relation(fields: [userId], references: [id])
 
   parentFolder    Entity?         @relation("EntityParent", fields: [parentId], references: [id], onDelete: Cascade)
